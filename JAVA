@@ -1,1 +1,83 @@
 
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package com.voice;
+
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLConnection;
+import org.json.JSONObject;
+
+/**
+ *
+ * @author PHUOCLE
+ */
+public class demo {
+    static String link = "http://210.211.108.20:8080/onsmsapivoice/postSMS";
+    public static void main(String[] args) throws Exception {
+        String phonesend = "";// Phone send 
+        String sender = "DAUSO1";//fix DAUSO1
+        String key = "";//SECRET_KEY: key
+        String message = "";//is otp
+        String pass = "";//provided
+        String username = "";//provided
+        JSONObject json = new JSONObject();
+        json.put("phonesend", phonesend);
+        json.put("sender", sender);
+        json.put("key", key);
+        json.put("message", message);
+        json.put("pass", pass);
+        json.put("username", username);
+        String val = null;
+        val = getResponse(link, json.toString());
+        System.out.println("result: " + val);
+
+    }
+
+    public static String getResponse(String url, String request) throws Exception {
+        URL sendUrl = new URL(url);
+        System.out.println(url);
+        URLConnection urlCon = sendUrl.openConnection();
+        urlCon.setDoOutput(true);
+        urlCon.setDoInput(true);
+        HttpURLConnection httpConnection = (HttpURLConnection) urlCon;
+        httpConnection.setRequestMethod("POST");
+        httpConnection.setConnectTimeout(30000);
+        httpConnection.setRequestProperty("Content-Type", "application/json");
+        httpConnection.setRequestProperty("Content-Length", Integer.toString(request.length()));
+        PrintStream ps = new PrintStream(httpConnection.getOutputStream(), true, "utf-8");
+
+        try {
+            ps.write(request.getBytes("utf-8"));
+            ps.flush();
+            String str = httpConnection.getResponseMessage();
+            InputStream is = httpConnection.getInputStream();
+            InputStreamReader isr = new InputStreamReader(is, "utf-8");
+            BufferedReader br = new BufferedReader(isr);
+            str = "";
+            StringBuffer sb = new StringBuffer();
+            while ((str = br.readLine()) != null) {
+                sb.append(str);
+            }
+            is.close();
+            httpConnection.disconnect();
+            return new String(sb.toString().getBytes("utf-8"), "utf-8");
+        } catch (Exception e) {
+            e.printStackTrace();
+            if (e.getMessage().contains("401 for URL")) {
+                return "401";
+            } else {
+                return "";
+            }
+
+        }
+
+    }
+}
